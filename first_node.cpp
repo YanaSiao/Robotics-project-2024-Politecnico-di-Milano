@@ -1,110 +1,170 @@
-#include <cmath>
 #include <iostream>
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <cmath>
+#include <vector>
 #define SEMI_MAJOR_AXIS 6378137
 #define SEMI_MINOR_AXIS 6356752
 
-float64 gpsToEcef[](float64 lat, float64 lon, float64 alt){
-  float64 X, Y, Z;
-  float64 N;
-  float64 esq = 1- pow(b, 2)/pow(a,2);
+class Gps_to_odom{
 
-  N = a / sqrt(1- esq*pow(sin(lat),2));
-  X = cos(lat)*cos(lon)*(alt + N);
-  Y = cos(lat)*sin(lon)*(alt + N);
-  Z = sin(lat)*(alt + N*(1-esq));  //1-(1+c) = c = 0.9933055
-  float6464 ecef_point[3] = {X,Y,Z};
+private:
+    ros::Publisher odom_pub;
+    ros::NodeHandle nh;
+    ros::Subscriber gps_sub;
 
-  return ecef_point;
-}
+    bool first_time = true;
 
-float64 ecefToNed[](float64 ref_point [], float64 ecef_point [],float64 lat_r, float64 lon_r, float64 alt_r){
-  float64 A [3][3] = {{-sin(lon_zero), cos(lon_r), 0},{-sin(lat_r)*cos(lon_r), -sin(lat_r)*sin(lon_r), cos(lat_r)},{cos(lat_r)*cos(lon_r), cos(lat_r)*sin(lon_r), sin(lat_r)}};
-  float64 B [3][1] = {{ecef_point[0] - ref_point[0]},{ecef_point[1]-ref_point[1]},{ecef_point[2]-ref_point[2]}};
-  float64 C [3] = {{0}, {0}, {0}};
-  for( int i = 0; i < 3; i++) {
-    for(int j =0; j<3; j++) {
-      C[i] += A[i][j]*B[j][1];
+    double lat_first = 0.0;
+    double lon_first = 0.0;
+    double alt_first = 0.0;
+
+    std::vector<double> ref_point; //yana dimmi se ho fatto bene, cioè qua dovresti fare il punto di riferimento
+    //(tra l'altro una volta sola) e quindi gli passi xxx_first giusto?
+    // tra l'altro non so se posso metterlo qui LOL però alla fine va fatto una volta sol
+    std::vector<double> prev_ned_point;
+
+    double lat = 0.0;
+    double lon = 0.0;
+    double alt = 0.0;
+
+    void fixCallback(const sensor_msgs::NavSatFix::ConstPtr& message){
+        if(first_time){
+            lat_first  = message -> latitude;
+            lon_first  = message -> longitude;
+            alt_first = message -> altitude;
+            this -> first_time = false;
+        }
+
+        //in ogni caso devo settare le nuove variabili, anche quando siamo alla prima volta!
+        lat = message -> latitude;
+        lon = message -> longitude;
+        alt = message -> altitude;
+        std::vector<double> ecef_point = gpsToEcef(lat,lon,alt);
+
+        std::vector<double> ned_point = ecefToNed(ref_point,ecef_point);
+        // Calculate displacement for heading estimation
+
+        std::vector<double> displacement(3);
+        std::set_difference(ned_point.begin(), ned_point.end(), prev_ned_point.begin(), prev_ned_point.end(),displacement.begin());
+        std::copy(ned_point.begin(),ned_point.end(), prev_ned_point.begin());  // Update previous position for next iteration
+
+        // Estimate heading (assuming 2D)
+        double orientation = atan2(displacement[1], displacement[0]);
+        //double heading_deg = orientation * 180.0 / M_PI;
+
+        publish_odom_message(ned_point,orientation);
     }
-  }
-  return C;
-}
+
+public:
+    std::vector<double> gpsToEcef(double lat_deg, double lon_deg, double alt_deg){
+        double X, Y, Z;
+        double N;
+        double esq = 1- pow(SEMI_MINOR_AXIS, 2)/pow(SEMI_MAJOR_AXIS,2);
+
+        double lat_rad = lat_deg * M_PI / 180;
+        double lon_rad = lon_deg * M_PI / 180;
+
+        N = SEMI_MAJOR_AXIS / sqrt(1- esq*pow(sin(lat),2));
+
+        X = cos(lat_rad)*cos(lon_rad)*(alt_deg + N);
+        Y = cos(lat_rad)*sin(lon_rad)*(alt_deg + N);
+        Z = sin(lat_rad)*(alt_deg + N*(1-esq));  //1-(1+c) = c = 0.9933055
+        std::vector<double> ecef_point = {X,Y,Z};
+
+        return ecef_point;
+    }
+
+    void publish_odom_message(std::vector<double> ned_point,double orientation){
+
+        nav_msgs::Odometry odom_msg;
+
+        // Set position in NED frame
+        odom_msg.pose.pose.position.x = ned_point[0];
+        odom_msg.pose.pose.position.y = ned_point[1];
+        odom_msg.pose.pose.position.z = ned_point[2];
+
+        // Optional: Include estimated heading in odometry message (might be inaccurate)
+        odom_msg.pose.pose.orientation.w = cos(orientation);  // Assuming no roll
+        odom_msg.pose.pose.orientation.z = sin(orientation);
+
+        // Publish odometry message
+        odom_pub.publish(odom_msg);
+
+        //ROS_INFO("odom message has been published: %s", odom_msg.pose.pose.position.x.c_str()); //non so come trasformarlo in stringa LOL
+    }
+
+    void init(){
+        ref_point = gpsToEcef(lat_first, lon_first, alt_first); //inizializzo l'attributo della classe
+        prev_ned_point = {0,0,0};
+
+        odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 10);
+        gps_sub = nh.subscribe("/fix", 10, &Gps_to_odom::fixCallback,this);
+
+        ros::spin(); //fa il check sulle chiamate ai callback
+    }
+
+    std::vector<double> ecefToNed(std::vector<double> ref_point, std::vector<double> ecef_point){
+        std::vector<std::vector<double>> A = {
+                {-sin(lon_first * M_PI / 180), cos(lon_first * M_PI / 180), 0},
+                {-sin(lat_first * M_PI / 180) * cos(lon_first * M_PI / 180), -sin(lat_first * M_PI / 180) * sin(lon_first * M_PI / 180), cos(lat_first * M_PI / 180)},
+                {cos(lat_first * M_PI / 180) * cos(lon_first * M_PI / 180), cos(lat_first * M_PI / 180) * sin(lon_first * M_PI / 180), sin(lat_first * M_PI / 180)}
+        };
+        std::vector<std::vector<double>> B= {
+                {ecef_point[0] - ref_point[0]},
+                {ecef_point[1]-ref_point[1]},
+                {ecef_point[2]-ref_point[2]}
+        };
+        std::vector<double> C= {{0}, {0}, {0}}; //questo non ho capito se volevi fare un array, perchè così mi sa che hai fatto una matrice strana (?)
+        for( int i = 0; i < 3; i++) {
+            for(int j =0; j<3; j++) {
+                C[i] += A[i][j]*B[j][0];
+            }
+        }
+        return C;
+    }
+};
+
 
 int main(int argc, char **argv) {
-  ros::init(argc, argv, "gps_to_odom");
-  ros::NodeHandle nh;
+    ros::init(argc, argv, "gps_to_odom");
 
-  // Advertise odometry topic
-  ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 10);
+    Gps_to_odom odom;
 
-  // Advertise odometry topic
-  ros::Publisher odom_pub = nh.advertise<geometry_msgs::Odometry>("gps_odom", 10);
- // Set initial position (replace with values from first GPS message)
-  sensor_msgs::NavSatFix gps;
-  double lat_first = gps.latitude;
-  double lon_first = gps.longitude;
-  double alt_first = gps.altitude;
+    odom.init();
 
-  double lat = lat_first;
-  double lon = lon_first;
-  double alt = alt_first;
-  float64 ref_point[] = gpsToEcef(lat, lon, alt);
-  float64 prev_ned_point[] = ecefToNed(ref_point, lat_first, lon_first, alt_first);
+    // Main loop
+    ros::Rate rate(10); // Set publishing rate
+    while (ros::ok()) {
 
-  // Main loop
-  ros::Rate rate(10); // Set publishing rate
+        rate.sleep();
+    }
+    return 0;
+}
 
-  while (ros::ok()) {
-    // Convert GPS data to ECEF.
-    float64 ecef_point [] = gpsToEcef(lat, lon, alt);
 
-    // Calculate relative position in NED frame.
-    float64 ned_point []= ecefToNed(ref_point, ecef_point, lat_first, lon_first, alt_first);
+/*
+//SECONDO FILE
 
-    // Calculate displacement for heading estimation
-    float64 displacement[] = ned_point - prev_ned_point;
-    prev_ned_point = ned_point;  // Update previous position for next iteration
-
-    // Estimate heading (assuming 2D)
-    // atan2 is a four-quadrant inverse tangent in rad
-    double orientation = std::atan2(displacement[1], displacement[0]);
-    double heading_deg = orientation * 180.0 / M_PI;
-
-    // Create odometry message
-    nav_msgs::Odometry odom_msg;
-
-    // Set position in NED frame
-    odom_msg.pose.pose.position.x = ned_point[0];
-    odom_msg.pose.pose.position.y = ned_point[1];
-    odom_msg.pose.pose.position.z = ned_point[2];
-
-    // Optional: Include estimated heading in odometry message
-    odom_msg.pose.pose.orientation.w = cos(orientation );  // Assuming no roll
-    odom_msg.pose.pose.orientation.z = sin(orientation );
-
-    // Publish odometry message
-    odom_pub.publish(odom_msg);
-
-    // Create TF transform (optional?)
+// Create TF transform (optional?) questo non so se va fatto qua
     nav_msgs::TransformStamped transform;
     transform.header.stamp = ros::Time::now();
 
+    transform.header.frame_id = "gps_link";
+    transform.child_frame_id = "base_link";
     transform.transform.translation.x = ned_point[0];
     transform.transform.translation.y = ned_point[1];
     transform.transform.translation.z = ned_point[2];
 
-    transform.transform.rotation.w = cos(orientation);  // Assuming no roll
+    transform.transform.rotation.w = cos(orientation);  // Assuming no roll or pitch
 
-    rate.sleep();
+  // Create TF broadcaster
+  tf2_ros::TransformBroadcaster br;
+  // Store previous position for heading estimation
+  Eigen::Vector3d prev_ned_point(0.0, 0.0, 0.0);
 
-//  receiving new GPS data
-   lat = gps.latitude;
-   lon = gps.longitude;
-   alt = gps.altitude;
-  }
-    return 0;
-}
+ // Broadcast TF transform (optional?)
+    br.sendTransform(transform);
+*/
