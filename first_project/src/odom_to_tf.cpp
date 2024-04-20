@@ -23,7 +23,10 @@ public:
         tf::Transform transform;
 
         //Populate the object with odometry data
-
+        transform.translation.x = msg->pos.pos.position.x;
+        transform.translation.y = msg->pos.pos.position.y;
+        transform.translation.z = msg->pos.pos.position.z;
+        transform.rotation = msg->pos.pos.orientation;
 
         //Publish the transformation using broadcaster
         //Consider this StampedTransform constructor:
@@ -39,6 +42,7 @@ public:
 int main(int argc, char **argv){
 
     ros::init(argc, argv, "odom_to_tf");
+    Odom_to_tf odomToTf;
 
     ros::spin();
 
