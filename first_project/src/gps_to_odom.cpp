@@ -127,7 +127,6 @@ public:
     }
 
     void init(){
-
         prev_ned_point = {0,0,0};
 
         odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 10);
