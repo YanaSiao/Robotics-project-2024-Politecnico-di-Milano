@@ -32,18 +32,17 @@ private:
 
         if(first_time){
 
-
             nh.getParam("lat_r", lat_first);
             nh.getParam("lon_r", lon_first);
             nh.getParam("alt_r", alt_first);
-            ROS_INFO("Prese dai parametri: %f %f %f",lat_first,lon_first,alt_first);
+            //ROS_INFO("Prese dai parametri: %f %f %f",lat_first,lon_first,alt_first);
             /*lat_first  = message -> latitude;
             lon_first  = message -> longitude;
             alt_first = message -> altitude;
             ROS_INFO("Prese dal callback: %f %f %f",lat_first,lon_first,alt_first);
             */
             ref_point = gpsToEcef(lat_first,lon_first,alt_first);
-            ROS_INFO("ref point ecef: %f %f %f",ref_point[0],ref_point[1],ref_point[2]);
+            //ROS_INFO("ref point ecef: %f %f %f",ref_point[0],ref_point[1],ref_point[2]);
             this -> first_time = false;
         }
 
@@ -51,9 +50,9 @@ private:
         lat = message -> latitude;
         lon = message -> longitude;
         alt = message -> altitude;
-        ROS_INFO("Dati base: %f %f %f", lat,lon,alt);
+        //ROS_INFO("Dati base: %f %f %f", lat,lon,alt);
         std::vector<double> ecef_point = gpsToEcef(lat,lon,alt);
-        ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
+        //ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
         std::vector<double> ned_point = ecefToEnu(ref_point,ecef_point);
         // Calculate displacement for heading estimation
 
@@ -75,7 +74,7 @@ public:
 
         double lat_rad = lat_deg * M_PI / 180;
         double lon_rad = lon_deg * M_PI / 180;
-        ROS_INFO("Dati base radiant: %f %f %f", lat_rad,lon_rad,altit);
+        //ROS_INFO("Dati base radiant: %f %f %f", lat_rad,lon_rad,altit);
         N = SEMI_MAJOR_AXIS / sqrt(1- esq*pow(sin(lat_rad),2));
 
         X = cos(lat_rad)*cos(lon_rad)*(altit + N);
@@ -123,14 +122,14 @@ public:
         odom_pub.publish(odom_msg);
 
         ROS_INFO("odom trasformed message has been published X: %f, Y: %f, Z: %f", odom_msg.pose.pose.position.x,
-                 odom_msg.pose.pose.position.y,odom_msg.pose.pose.position.z); //non so come trasformarlo in stringa LOL
+                 odom_msg.pose.pose.position.y,odom_msg.pose.pose.position.z);
     }
 
     void init(){
         prev_ned_point = {0,0,0};
 
-        odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 10);
-        gps_sub = nh.subscribe("fix", 100, &Gps_to_odom::fixCallback,this);
+        odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 1000);
+        gps_sub = nh.subscribe("fix", 1000, &Gps_to_odom::fixCallback,this);
         ros::spin(); //fa il check sulle chiamate ai callback
     }
 };
@@ -140,39 +139,7 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "gps_to_odom");
 
     Gps_to_odom odom;
-    ROS_INFO("siamo nel progetto");
     odom.init();
 
-    // Main loop
-    ros::Rate rate(10); // Set publishing rate
-    //while (ros::ok()) {
-
-    //  rate.sleep();
-    //}
     return 0;
 }
-
-
-/*
-//SECONDO FILE
-
-// Create TF transform (optional?) questo non so se va fatto qua
-    nav_msgs::TransformStamped transform;
-    transform.header.stamp = ros::Time::now();
-
-    transform.header.frame_id = "gps_link";
-    transform.child_frame_id = "base_link";
-    transform.transform.translation.x = ned_point[0];
-    transform.transform.translation.y = ned_point[1];
-    transform.transform.translation.z = ned_point[2];
-
-    transform.transform.rotation.w = cos(orientation);  // Assuming no roll or pitch
-
-  // Create TF broadcaster
-  tf2_ros::TransformBroadcaster br;
-  // Store previous position for heading estimation
-  Eigen::Vector3d prev_ned_point(0.0, 0.0, 0.0);
-
- // Broadcast TF transform (optional?)
-    br.sendTransform(transform);
-*/
