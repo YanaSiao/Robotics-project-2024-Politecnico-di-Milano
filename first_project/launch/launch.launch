@@ -18,5 +18,5 @@
           <param name="child_frame" value="wheel_odom"/>
      </node>
 
-     <node pkg="first_project" name="lidar_remap" type="lidar_remap" output="screen"/>
+    <node pkg="first_project" name="lidar_remap" type="lidar_remap" output="screen"/>
 </launch>

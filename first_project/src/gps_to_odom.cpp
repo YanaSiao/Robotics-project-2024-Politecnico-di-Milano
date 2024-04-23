@@ -15,8 +15,6 @@ private:
     ros::NodeHandle nh;
     ros::Subscriber gps_sub;
 
-    bool first_time = true;
-
     double lat_first = 0.0;
     double lon_first = 0.0;
     double alt_first = 0.0;
@@ -29,28 +27,11 @@ private:
     double alt = 0.0;
 
     void fixCallback(const sensor_msgs::NavSatFix::ConstPtr& message){
-
-        if(first_time){
-
-            nh.getParam("lat_r", lat_first);
-            nh.getParam("lon_r", lon_first);
-            nh.getParam("alt_r", alt_first);
-            //ROS_INFO("Prese dai parametri: %f %f %f",lat_first,lon_first,alt_first);
-            /*lat_first  = message -> latitude;
-            lon_first  = message -> longitude;
-            alt_first = message -> altitude;
-            ROS_INFO("Prese dal callback: %f %f %f",lat_first,lon_first,alt_first);
-            */
-            ref_point = gpsToEcef(lat_first,lon_first,alt_first);
-            //ROS_INFO("ref point ecef: %f %f %f",ref_point[0],ref_point[1],ref_point[2]);
-            this -> first_time = false;
-        }
-
         //in ogni caso devo settare le nuove variabili, anche quando siamo alla prima volta!
         lat = message -> latitude;
         lon = message -> longitude;
         alt = message -> altitude;
-        //ROS_INFO("Dati base: %f %f %f", lat,lon,alt);
+        ROS_INFO("Dati base: %f %f %f", lat,lon,alt);
         std::vector<double> ecef_point = gpsToEcef(lat,lon,alt);
         //ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
         std::vector<double> ned_point = ecefToEnu(ref_point,ecef_point);
@@ -96,7 +77,7 @@ public:
                 {ecef_point[1] - ref_point[1]},
                 {ecef_point[2] - ref_point[2]}
         };
-        std::vector<double> C= {0, 0, 0}; //questo non ho capito se volevi fare un array, perchè così mi sa che hai fatto una matrice strana (?)
+        std::vector<double> C= {0, 0, 0};
         for( int i = 0; i < 3; i++) {
             for(int j =0; j<3; j++) {
                 C[i] += A[i][j]*B[j][0];
@@ -128,9 +109,15 @@ public:
     void init(){
         prev_ned_point = {0,0,0};
 
-        odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 1000);
+        nh.getParam("lat_r", lat_first);
+        nh.getParam("lon_r", lon_first);
+        nh.getParam("alt_r", alt_first);
+        ref_point = gpsToEcef(lat_first,lon_first,alt_first);
+
         gps_sub = nh.subscribe("fix", 1000, &Gps_to_odom::fixCallback,this);
+        odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 1000);
         ros::spin(); //fa il check sulle chiamate ai callback
+
     }
 };
 

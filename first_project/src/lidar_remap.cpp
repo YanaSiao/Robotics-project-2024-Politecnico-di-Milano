@@ -2,33 +2,45 @@
 #include <ros/ros.h>
 #include <nav_msgs/Odometry.h>
 #include <dynamic_reconfigure/server.h>
+#include <first_project/dynamic_reconfigureConfig.h>
 
 class Lidar_remap {
 
 private:
     ros::NodeHandle n;
 
-    tf::TransformBroadcaster br;
     ros::Subscriber lidar_sub;
-
-    tf_frame_id:
-        name: LiDAR Reference Frame
-        type: string
-        default: "wheel_odom"
-        enum : ["wheel_odom", "gps_odom"]
+    ros::Publisher lidar_pub;
+    ros::string frame = "wheel_odom";
 
 public:
 
-    Lidar_remap() {
-        Lidar_sub = n.subscribe("os_cloud_node/points pointcloud", 1000, &lidar_remap::callback, this);
-    }
-
-    void configCallback(first_project::header_config &config, uint32_t level) {
+    void callback(first_project::dynamic_reconfigureConfig &config, uint32_t level) {
+        frame = config.frame;
 
         // Update the TF frame ID based on the selected value
-        your_tf_broadcaster.set_frame_id(config.tf_frame_id);
 
-        ROS_INFO("Reconfigured: TF Frame: %s", config.tf_frame_id.c_str());
+        ROS_INFO("Reconfigured Frame: %s", config.frame.c_str());
+    }
+
+    void configCallback(const sensor_msgs::PointCloud2::ConstPtr& msg) {
+        msg.points.header = frame;
+
+        odom_pub.publish(msg);
+        ROS_INFO("Aligned data : %s,", msg.points.header.c_str());
+    }
+
+    void init(){
+        lidar_sub = n.subscribe("os_cloud_node/points", 1000, &lidar_remap::configCallback, this);
+        odom_pub = n.advertise<sensor_msgs::PointCloud2>("pointcloud_remapped", 1000);
+
+        dynamic_reconfigure::Server<first_project::dynamic_reconfigureConfig> server;
+        dynamic_reconfigure::Server<first_project::dynamic_reconfigureConfig>::CallbackType f;
+
+        f = boost::bind(&callback, _1, _2);
+        server.setCallback(f);
+
+        ros::spin();
     }
 };
 
@@ -39,11 +51,7 @@ int main(int argc, char **argv){
 
     Lidar_remap lidar_sub;
 
-    dynamic_reconfigure::Server<first_project::header_config> server;
-    server.setCallback(configCallback);
-
-    ros::spin();
-
+    lidar_sub.init();
 
     return 0;
 }
