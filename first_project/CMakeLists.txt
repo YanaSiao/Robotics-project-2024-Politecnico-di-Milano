@@ -90,10 +90,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+ generate_dynamic_reconfigure_options(
+         cfg/lidar_frameID.cfg
+ )
 
 ###################################
 ## catkin specific configuration ##
@@ -104,10 +103,6 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-generate_dynamic_reconfigure_options(
-        cfg/dynamic_reconfigure.cfg
-)
-
 
 catkin_package(
         #  INCLUDE_DIRS include
@@ -219,5 +214,6 @@ add_executable(odom_to_tf src/odom_to_tf.cpp)
 target_link_libraries(odom_to_tf ${catkin_LIBRARIES})
 
 add_executable(lidar_remap src/lidar_remap.cpp)
+add_dependencies(lidar_remap ${PROJECT_NAME}_gencfg)
 target_link_libraries(lidar_remap ${catkin_LIBRARIES})
 

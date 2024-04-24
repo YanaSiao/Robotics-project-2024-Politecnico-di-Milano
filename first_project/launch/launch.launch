@@ -3,7 +3,7 @@
 
      <param name="lat_r" value="45.477669"/>
      <param name="lon_r" value="9.226740"/>
-     <param name="alt_r" value="169.039000" />
+     <param name="alt_r" value="169.041000" />
 
      <node pkg="rviz" type="rviz" name="rviz" />
 
