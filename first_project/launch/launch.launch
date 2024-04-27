@@ -9,14 +9,5 @@
 
      <param name="root_frame" value="world" />
 
-    <node pkg="first_project" name="odom_to_tf2" type="odom_to_tf" output="screen">
-        <remap from="input_odom" to="gps_odom"/>
-        <param name="child_frame" value="gps_odom"/>
-     </node>
-     <node pkg="first_project" name="odom_to_tf1" type="odom_to_tf" output="screen">
-          <remap from="input_odom" to="odom"/>
-          <param name="child_frame" value="wheel_odom"/>
-     </node>
 
-    <node pkg="first_project" name="lidar_remap" type="lidar_remap" output="screen"/>
 </launch>

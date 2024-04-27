@@ -45,6 +45,26 @@ public:
         ros::spin(); //fa il check sulle chiamate ai callback
     }
 
+    std::vector<double> rotate2D(std::vector<double> xy, double angle_degrees) {
+        // Convert angle to radians
+        double angle_radians = angle_degrees * M_PI / 180.0;
+
+        // Rotation matrix
+        std::vector<std::vector<double>> R = {{cos(angle_radians), -sin(angle_radians)},
+                                    {sin(angle_radians), cos(angle_radians)}};
+
+        // Rotate the vector
+        std::vector<double> rotated_xy={0,0,0};
+
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                rotated_xy[i] += R[i][j] * xy[j];
+            }
+        }
+
+        return rotated_xy;
+    }
+
     void fixCallback(const sensor_msgs::NavSatFix::ConstPtr& message){
         //in ogni caso devo settare le nuove variabili, anche quando siamo alla prima volta!
         lat = message -> latitude;
@@ -56,6 +76,9 @@ public:
         //ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
 
         std::vector<double> ned_point = ecefToEnu(ref_point,ecef_point);
+
+        ned_point = rotate2D(ned_point,130);
+
         // Calculate displacement for heading estimation
 
         std::vector<double> displacement(2); // Pre-allocate for efficiency (optional)
