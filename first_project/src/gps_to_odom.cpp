@@ -3,6 +3,8 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <tf2/LinearMath/Quaternion.h>
+#include <geometry_msgs/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <cmath>
 #include <vector>
 #define SEMI_MAJOR_AXIS 6378137
@@ -20,7 +22,7 @@ private:
     double alt_first = 0.0;
 
     std::vector<double> ref_point;
-    std::vector<double> prev_ned_point;
+    std::vector<double> prev_enu_point;
 
     double orientation;
     double prev_orientation = 0.0; // Initialize with any default value
@@ -31,7 +33,7 @@ private:
 
 public:
     void init(){
-        prev_ned_point = {0, 0, 0};
+        prev_enu_point= {0, 0, 0};
 
         nh.getParam("lat_r", lat_first);
         nh.getParam("lon_r", lon_first);
@@ -51,7 +53,7 @@ public:
 
         // Rotation matrix
         std::vector<std::vector<double>> R = {{cos(angle_radians), -sin(angle_radians)},
-                                    {sin(angle_radians), cos(angle_radians)}};
+                                              {sin(angle_radians), cos(angle_radians)}};
 
         // Rotate the vector
         std::vector<double> rotated_xy={0,0,0};
@@ -65,6 +67,27 @@ public:
         return rotated_xy;
     }
 
+    double normalizeAngle(double angle) {
+        while (angle > M_PI) {
+            angle -= 2 * M_PI;
+        }
+        while (angle < -M_PI) {
+            angle += 2 * M_PI;
+        }
+        return angle;
+    }
+
+    geometry_msgs::Quaternion quaternionFromYaw(double yaw) {
+        tf2::Quaternion quat;
+        quat.setRPY(0, 0, yaw);  // Roll, pitch, yaw (in radians)
+
+        geometry_msgs::Quaternion quat_msg = tf2::toMsg(quat);
+        //tf2::convert(quat, quat_msg);
+
+
+        return quat_msg;
+    }
+
     void fixCallback(const sensor_msgs::NavSatFix::ConstPtr& message){
         //in ogni caso devo settare le nuove variabili, anche quando siamo alla prima volta!
         lat = message -> latitude;
@@ -75,32 +98,37 @@ public:
         std::vector<double> ecef_point = gpsToEcef(lat, lon, alt);
         //ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
 
-        std::vector<double> ned_point = ecefToEnu(ref_point,ecef_point);
+        std::vector<double> enu_point = ecefToEnu(ref_point,ecef_point);
 
-        ned_point = rotate2D(ned_point,130);
+        enu_point = rotate2D(enu_point,130);
+//        enu_point[0] = enu_point[0] + 4;
+//        enu_point[0] = enu_point[0] - 10;
 
         // Calculate displacement for heading estimation
 
         std::vector<double> displacement(2); // Pre-allocate for efficiency (optional)
 
         // Calculate displacement (assuming NED coordinates)
-        displacement[0] = ned_point[0] - prev_ned_point[0]; // Easting difference
-        displacement[1] = ned_point[1] - prev_ned_point[1]; // Northing difference
+        displacement[0] = enu_point[0] - prev_enu_point[0]; // Easting difference
+        displacement[1] = enu_point[1] - prev_enu_point[1]; // Northing difference
 
         // Handle zero displacement to avoid division by zero
         if (displacement[0] == 0) {
             orientation = prev_orientation;
         } else {
             // Calculate orientation using arctangent (atan2 for signed angle)
-            orientation = atan2(displacement[1], displacement[0]);
+            orientation = atan2(displacement[1], displacement[0]) /*+ 129 * M_PI / 180*/;
         }
 
         // Update previous position for next iteration (after orientation calculation)
-        prev_ned_point[0] = ned_point[0];
-        prev_ned_point[1] = ned_point[1];
+        prev_enu_point[0] = enu_point[0];
+        prev_enu_point[1] = enu_point[1];
+
+        orientation = normalizeAngle(orientation);
+
         prev_orientation = orientation;
 
-        publish_odom_message(ned_point,orientation);
+        publish_odom_message(enu_point,orientation);
     }
 
     std::vector<double> gpsToEcef(double lat_deg, double lon_deg, double altit){
@@ -152,6 +180,8 @@ public:
         nav_msgs::Odometry odom_msg;
 
         //odom_msg.header.stamp = ros::Time::now();
+        odom_msg.header.frame_id = "gps_odom";
+        odom_msg.child_frame_id = "base_link";
 
         // Set position in NED frame
         odom_msg.pose.pose.position.x = enu_point[0];
@@ -159,8 +189,12 @@ public:
         odom_msg.pose.pose.position.z = 0;
 
         // Optional: Include estimated heading in odometry message (might be inaccurate)
-        odom_msg.pose.pose.orientation.w = cos(orientation);  // Assuming no roll
-        odom_msg.pose.pose.orientation.z = sin(orientation);
+//        odom_msg.pose.pose.orientation.w = cos(orientation);  // Assuming no roll
+//        odom_msg.pose.pose.orientation.z = sin(orientation);
+        //odom_msg.pose.pose.orientation = tf2::createQuaternionMsgFromYaw(orientation);
+
+        // Set orientation in quaternion format
+        odom_msg.pose.pose.orientation = quaternionFromYaw(orientation);
 
         // Publish odometry message
         odom_pub.publish(odom_msg);
