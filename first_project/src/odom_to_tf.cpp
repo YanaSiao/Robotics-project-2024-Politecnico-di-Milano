@@ -35,9 +35,10 @@ public:
         std::string param_name = ros::this_node::getName() + "/child_frame";
         n.getParam(param_name,child.data);
 
-        transform.header.stamp = ros::Time::now();
+        transform.header.stamp = msg->header.stamp;
         transform.header.frame_id = root.data;
         transform.child_frame_id = child.data;
+        
         // Extract pose from odometry
         transform.transform.translation.x = msg->pose.pose.position.x;
         transform.transform.translation.y = msg->pose.pose.position.y;

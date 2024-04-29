@@ -82,8 +82,6 @@ public:
         quat.setRPY(0, 0, yaw);  // Roll, pitch, yaw (in radians)
 
         geometry_msgs::Quaternion quat_msg = tf2::toMsg(quat);
-        //tf2::convert(quat, quat_msg);
-
 
         return quat_msg;
     }
@@ -101,12 +99,10 @@ public:
         std::vector<double> enu_point = ecefToEnu(ref_point,ecef_point);
 
         enu_point = rotate2D(enu_point,130);
-//        enu_point[0] = enu_point[0] + 4;
-//        enu_point[0] = enu_point[0] - 10;
 
         // Calculate displacement for heading estimation
 
-        std::vector<double> displacement(2); // Pre-allocate for efficiency (optional)
+        std::vector<double> displacement(2);
 
         // Calculate displacement (assuming NED coordinates)
         displacement[0] = enu_point[0] - prev_enu_point[0]; // Easting difference
@@ -128,7 +124,7 @@ public:
 
         prev_orientation = orientation;
 
-        publish_odom_message(enu_point,orientation);
+        publish_odom_message(enu_point,orientation,message->header.stamp);
     }
 
     std::vector<double> gpsToEcef(double lat_deg, double lon_deg, double altit){
@@ -138,7 +134,6 @@ public:
 
         double lat_rad = lat_deg * M_PI / 180;
         double lon_rad = lon_deg * M_PI / 180;
-        //ROS_INFO("Dati base radiant: %f %f %f", lat_rad,lon_rad,altit);
         N = SEMI_MAJOR_AXIS / sqrt(1 - esq * pow(sin(lat_rad),2));
 
         X = cos(lat_rad) * cos(lon_rad) * (altit + N);
@@ -175,11 +170,11 @@ public:
         return C;
     }
 
-    void publish_odom_message(std::vector<double> enu_point,double orientation){
+    void publish_odom_message(std::vector<double> enu_point,double orientation, ros::Time stamp){
 
         nav_msgs::Odometry odom_msg;
 
-        //odom_msg.header.stamp = ros::Time::now();
+        odom_msg.header.stamp = stamp;
         odom_msg.header.frame_id = "gps_odom";
         odom_msg.child_frame_id = "base_link";
 
@@ -187,11 +182,6 @@ public:
         odom_msg.pose.pose.position.x = enu_point[0];
         odom_msg.pose.pose.position.y = enu_point[1];
         odom_msg.pose.pose.position.z = 0;
-
-        // Optional: Include estimated heading in odometry message (might be inaccurate)
-//        odom_msg.pose.pose.orientation.w = cos(orientation);  // Assuming no roll
-//        odom_msg.pose.pose.orientation.z = sin(orientation);
-        //odom_msg.pose.pose.orientation = tf2::createQuaternionMsgFromYaw(orientation);
 
         // Set orientation in quaternion format
         odom_msg.pose.pose.orientation = quaternionFromYaw(orientation);
