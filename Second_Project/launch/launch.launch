@@ -1,5 +1,20 @@
 <launch>
-  <node pkg="rviz" type="rviz" name="rviz" />
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find Second_project)/config/my_rviz_config.rviz" />
+
+ <!-- Conversione da PointCloud a LaserScan -->
+  <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
+    <param name="target_frame" value="base_link"/>
+    <param name="min_height" value="0.1"/>
+    <param name="max_height" value="1.0"/>
+    <param name="angle_min" value="-1.5708"/>
+    <param name="angle_max" value="1.5708"/>
+    <param name="angle_increment" value="0.0087"/>
+    <param name="scan_time" value="0.1"/>
+    <param name="range_min" value="0.45"/>
+    <param name="range_max" value="10.0"/>
+    <remap from="cloud_in" to="/your_pointcloud_topic"/>
+    <remap from="scan" to="/scan"/>
+  </node>
 
   <node pkg="gmapping" type="slam_gmapping" name="gmapping" output="screen">
     <remap from="scan" to="base_scan" />
