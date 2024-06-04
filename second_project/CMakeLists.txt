@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(Second_project)
+project(second_project)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -7,7 +7,11 @@ project(Second_project)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-#find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        std_msgs
+        tf
+        )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -98,12 +102,12 @@ project(Second_project)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-##catkin_package(
+catkin_package(
         #  INCLUDE_DIRS include
         #  LIBRARIES second_project
         #  CATKIN_DEPENDS roscpp
         #  DEPENDS system_lib
-#)
+)
 
 ###########
 ## Build ##
@@ -201,5 +205,6 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(tf_publisher src/tf_publisher.cpp)
-add_executable(navigation src/navigation.cpp)
+add_executable(odom_to_tf src/odom_to_tf.cpp)
+target_link_libraries(odom_to_tf ${catkin_LIBRARIES})
+#add_executable(navigation src/navigation.cpp)

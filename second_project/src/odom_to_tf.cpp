@@ -12,9 +12,6 @@ private:
 
     tf::TransformBroadcaster br;
     tf:: Transform transform;
-   // ros::Subscriber sub;
-    //std_msgs::String root;
- //   std_msgs::String child;
 
 public:
 
@@ -31,11 +28,11 @@ public:
         transform.setOrigin( tf::Vector3(x, y, 0.0) );
 
         transform.setRotation(q);
-        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), data->header.frame_id, "base_footprint"));
+        br.sendTransform(tf::StampedTransform(transform, data->header.stamp, "odom", "base_footprint"));
     }
 
     void init(){
-        ros::Subscriber bagReader = n.subscribe<nav_msgs::Odometry>("/ugv/odom", 1000, &Tf_publisher::publish_tf,this);
+        ros::Subscriber bagReader = n.subscribe<nav_msgs::Odometry>("ugv/odom", 1000, &Odom_to_tf::publish_tf, this);
         ros::spin();
     }
 };
@@ -44,7 +41,7 @@ int main(int argc, char **argv){
 
     ros::init(argc, argv, "odom_to_tf");
 
-    Tf_publisher odom_to_tf;
+    Odom_to_tf odom_to_tf;
     odom_to_tf.init();
     ROS_INFO("init tf_publisher finished!");
 

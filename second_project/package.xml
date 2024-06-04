@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>Second_project</name>
+  <name>second_project</name>
   <version>0.0.0</version>
   <description>The second project package</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <maintainer email="yana.siao@mail.polimi.it">Yana Siao</maintainer>
-  <maintainer email="qijessy.zhang@mail.polimi.it">Jessy Zhang</maintainer>
+  <maintainer email="qijessy.zhang@mail.polimi.it">Qi Jessy Zhang</maintainer>
   <maintainer email="veronica.viceconti@mail.polimi.it">Veronica Viceconti</maintainer>
 
 
