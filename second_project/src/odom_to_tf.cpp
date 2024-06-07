@@ -28,7 +28,7 @@ public:
         transform.setOrigin( tf::Vector3(x, y, 0.0) );
 
         transform.setRotation(q);
-        br.sendTransform(tf::StampedTransform(transform, data->header.stamp, "odom", "base_footprint"));
+        br.sendTransform(tf::StampedTransform(transform, data->header.stamp, "odom", "base_link"));
     }
 
     void init(){
