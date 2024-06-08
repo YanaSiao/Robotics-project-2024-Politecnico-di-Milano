@@ -1,0 +1,45 @@
+TebLocalPlannerROS:
+
+  odom_topic: odom
+  map_frame: /map
+
+  # Trajectory
+
+  teb_autosize: True
+  dt_ref: 0.3
+  dt_hysteresis: 0.1
+  global_plan_overwrite_orientation: True
+  max_global_plan_lookahead_dist: 3.0
+  feasibility_check_no_poses: 5
+
+  # Robot
+
+  max_vel_x: 3.0
+  max_vel_x_backwards: 0.8
+  max_vel_y: 0.0
+  max_vel_theta: 3.0
+  acc_lim_x: 3.0
+  acc_lim_y: 0.0
+  acc_lim_theta: 1
+  min_turning_radius: 0.0
+  footprint_model: # types: "point", "circular", "two_circles", "line", "polygon"
+    footprint_model:
+      type: "polygon"
+      vertices: [ [ -0.306, -0.290 ], [ -0.306, 0.290 ], [ 0.306, 0.290 ], [ 0.306, -0.290 ] ]
+
+
+    # GoalTolerance
+
+  xy_goal_tolerance: 0.2
+  yaw_goal_tolerance: 0.1
+  free_goal_vel: False
+
+  # Obstacles
+
+  min_obstacle_dist: 0.2
+  include_costmap_obstacles: True
+  costmap_obstacles_behind_robot_dist: 1.0
+  obstacle_poses_affected: 30
+  costmap_converter_plugin: ""
+  costmap_converter_spin_thread: True
+  costmap_converter_rate: 5
