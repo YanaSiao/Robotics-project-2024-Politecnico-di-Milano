@@ -23,7 +23,7 @@ class Navigation{
 
         void move_to_goal(double x, double y, double tetha){
             
-            ROS_INFO("MoveBase parameters recived to be reached: X: %f , Y: %f, W: %f",x,y,tetha);
+            ROS_INFO("MoveBase parameters received to be reached: X: %f , Y: %f, W: %f",x,y,tetha);
             MoveBaseClient client("move_base", true);
 
             ROS_INFO("Waiting for the move_base action server...");

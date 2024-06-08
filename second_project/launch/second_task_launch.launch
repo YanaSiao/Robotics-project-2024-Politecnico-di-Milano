@@ -1,9 +1,9 @@
 <launch>
 
-<arg name="base"       default="burger"/> 
+  <!--<arg name="base"       default="scout_mini"/>-->
 
   <!-- Name of the map to use and initial position -->
-  <arg name="map_file"       default="$(find second_project)/maps/maps.yaml"/> 
+  <arg name="map_file"       default="$(find second_project)/maps/maps.yaml"/>
   <arg name="world_file"     default="$(find second_project)/maps/stage/maps.world"/>
   <arg name="initial_pose_x" default="2.0"/>
   <arg name="initial_pose_y" default="2.0"/>
@@ -34,22 +34,22 @@
 
   <!--  ************** Navigation  ***************  -->
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <rosparam file="$(find nav2d_conf)/cfg/costmap_common_params.yaml" command="load" ns="global_costmap" />
-    <rosparam file="$(find nav2d_conf)/cfg/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find nav2d_conf)/cfg/local_costmap_params.yaml" command="load" />   
-    <rosparam file="$(find nav2d_conf)/cfg/global_costmap_params.yaml" command="load" />
-    <rosparam file="$(find nav2d_conf)/cfg/dwa_local_planner_params.yaml" command="load" />
-    <rosparam file="$(find nav2d_conf)/cfg/move_base_params.yaml" command="load" /> 
+    <rosparam file="$(find second_project)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find second_project)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find second_project)/config/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find second_project)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find second_project)/config/teb_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find second_project)/config/move_base_params.yaml" command="load" />
 
-    <param name="base_global_planner" value="navfn/NavfnROS" />  <!--   planner  navfn/NavfnROS alternative  carrot_planner/CarrotPlanner -->
+    <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />  <!--   planner  navfn/NavfnROS alternative  carrot_planner/CarrotPlanner -->
     <param name="planner_frequency" value="1.0" />
     <param name="planner_patience" value="5.0" /> <!-- How long the planner will wait in seconds in an attempt to find a valid plan before space-clearing operations are performed.  -->
 
     <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
-    <param name="controller_frequency" value="5.0" />
+    <param name="controller_frequency" value="2.0" />
     <param name="controller_patience" value="5.0" /> <!-- How long the controller will wait in seconds without receiving a valid control before space-clearing operations are performed.  -->
 
-    <param name="clearing_rotation_allowed" value="true"/> 
+    <param name="clearing_rotation_allowed" value="true"/>
   </node>
 
 
@@ -60,7 +60,7 @@
 
 
   <!--  ****** amcl *****  -->
-  <include file="$(find nav2d_conf)/launch/amcl.launch.xml">
+  <include file="$(find second_project)/launch/amcl.launch.xml">
     <arg name="scan_topic" value="scan"/>
     <arg name="use_map_topic" value="true"/>
     <arg name="initial_pose_x" value="$(arg initial_pose_x)"/>
@@ -69,7 +69,8 @@
   </include>
 
 
-  <!--  **************** Visualisation ****************
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find nav2d_conf)/rviz/robot_navigation.rviz"/> -->
+  <!--  **************** Visualisation **************** -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find second_project)/rviz/second_rviz_config.rviz"/>
+
 
 </launch>
