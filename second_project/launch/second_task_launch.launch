@@ -41,7 +41,7 @@
     <rosparam file="$(find second_project)/config/teb_local_planner_params.yaml" command="load" />
     <rosparam file="$(find second_project)/config/move_base_params.yaml" command="load" />
 
-    <param name="base_global_planner" value="carrot_planner/CarrotPlanner" />  <!--   planner  navfn/NavfnROS alternative  carrot_planner/CarrotPlanner -->
+    <param name="base_global_planner" value="navfn/NavfnROS" />  <!--   planner  navfn/NavfnROS alternative  carrot_planner/CarrotPlanner -->
     <param name="planner_frequency" value="1.0" />
     <param name="planner_patience" value="5.0" /> <!-- How long the planner will wait in seconds in an attempt to find a valid plan before space-clearing operations are performed.  -->
 
