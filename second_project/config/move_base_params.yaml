@@ -12,6 +12,5 @@ oscillation_distance: 0.2
 
 # local planner - default is trajectory rollout
 base_local_planner: "teb_local_planner/TebLocalPlannerROS"
-
 base_global_planner: "carrot_planner/CarrotPlanner" #alternatives: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner navfn/NavfnROS
 

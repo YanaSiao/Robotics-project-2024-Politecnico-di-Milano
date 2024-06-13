@@ -3,8 +3,8 @@
   <!--<arg name="base"       default="scout_mini"/>-->
 
   <!-- Name of the map to use and initial position -->
-  <arg name="map_file"       default="$(find second_project)/maps/maps.yaml"/>
-  <arg name="world_file"     default="$(find second_project)/maps/stage/maps.world"/>
+  <arg name="map_file"       default="$(find second_project)/stage/maps.yaml"/>
+  <arg name="world_file"     default="$(find second_project)/stage/maps.world"/>
   <arg name="initial_pose_x" default="1.0"/>
   <arg name="initial_pose_y" default="1.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -46,8 +46,8 @@
     <param name="planner_patience" value="5.0" /> <!-- How long the planner will wait in seconds in an attempt to find a valid plan before space-clearing operations are performed.  -->
 
     <param name="base_local_planner" value="teb_local_planner/TebLocalPlannerROS" />
-    <param name="controller_frequency" value="2.0" />
-    <param name="controller_patience" value="5.0" /> <!-- How long the controller will wait in seconds without receiving a valid control before space-clearing operations are performed.  -->
+    <param name="controller_frequency" value="5.0" />
+    <param name="controller_patience" value="2.0" /> <!-- How long the controller will wait in seconds without receiving a valid control before space-clearing operations are performed.  -->
 
     <param name="clearing_rotation_allowed" value="true"/>
   </node>
