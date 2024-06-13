@@ -38,7 +38,7 @@ floorplan
 # throw in a robot
 scout-mini
 (
-  pose [ 2.0 2.0 0.0 0.0 ]
+  pose [ 1.0 1.0 0.0 0.0 ]
   name "scout-mini"
   color "black"
 )
