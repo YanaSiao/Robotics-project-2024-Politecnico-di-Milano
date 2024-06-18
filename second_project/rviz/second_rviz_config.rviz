@@ -169,6 +169,14 @@ Visualization Manager:
       Topic: /particlecloud
       Unreliable: false
       Value: true
+    - Class: rviz/Marker
+      Enabled: true
+      Marker Topic: visualization_marker
+      Name: Marker
+      Namespaces:
+        basic_shapes: true
+      Queue Size: 100
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -196,7 +204,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 34.19473648071289
+      Distance: 20.506423950195312
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -232,5 +240,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 960
-  X: -14
-  Y: 0
+  X: 167
+  Y: 156

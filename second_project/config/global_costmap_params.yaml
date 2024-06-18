@@ -6,8 +6,8 @@ global_costmap:
    publish_frequency: 0.5
    static_map: true
    transform_tolerance: 0.5
-   width: 41.0  # Match the floorplan's width
-   height: 30.0
+   width: 12.08   # Match the floorplan's width
+   height: 6.44
    plugins:
      - {name: static_layer,            type: "costmap_2d::StaticLayer"}
      - {name: inflation_layer,         type: "costmap_2d::InflationLayer"}

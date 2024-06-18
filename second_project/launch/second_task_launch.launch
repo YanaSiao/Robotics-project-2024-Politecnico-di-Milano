@@ -1,10 +1,9 @@
 <launch>
 
-  <!--<arg name="base"       default="scout_mini"/>-->
 
   <!-- Name of the map to use and initial position -->
-  <arg name="map_file"       default="$(find second_project)/stage/maps.yaml"/>
-  <arg name="world_file"     default="$(find second_project)/stage/maps.world"/>
+  <arg name="map_file"       default="$(find second_project)/maps/map.yaml"/>
+  <arg name="world_file"     default="$(find second_project)/maps/stage/map.world"/>
   <arg name="initial_pose_x" default="1.0"/>
   <arg name="initial_pose_y" default="1.0"/>
   <arg name="initial_pose_a" default="0.0"/>
@@ -14,6 +13,10 @@
 
   <param name="/use_sim_time" value="true"/>
 
+<!--  ****** Maps *****  -->
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
+    <param name="frame_id" value="map"/>
+  </node>
 
  <!--  ***************** Robot simulation *****************  -->
   <node pkg="stage_ros" type="stageros" name="stageros" args="$(arg world_file)">
@@ -22,14 +25,26 @@
   </node>
 
 
-  <!--  ***************** Robot Model *****************
-    <include file="$(find scout_mini_description)/launch/description.launch.xml">
-      <arg name="model" value="$(arg base)" />
-    </include>
-    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-      <param name="use_gui" value="false"/>
-    </node> -->
+  <!--  ***************** Robot Model ***************** -->
+  <!-- Parametri per le dimensioni del marker -->
+  <arg name="marker_size_x" default="0.612"/>
+  <arg name="marker_size_y" default="0.580"/>
+  <arg name="marker_size_z" default="0.245"/>
+     <!-- Joint State Publisher -->
+  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
+    <param name="use_gui" value="false"/>
+  </node>
 
+  <!-- Robot State Publisher -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+
+  <!-- Node for publishing the cube marker -->
+  <node name="marker" pkg="second_project" type="marker" output="screen">
+    <!-- Passa i parametri del marker come argomenti -->
+    <param name="marker_size_x" value="$(arg marker_size_x)"/>
+    <param name="marker_size_y" value="$(arg marker_size_y)"/>
+    <param name="marker_size_z" value="$(arg marker_size_z)"/>
+  </node>
 
 
   <!--  ************** Navigation  ***************  -->
@@ -53,11 +68,6 @@
   </node>
 
 
-  <!--  ****** Maps *****  -->
-  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)">
-    <param name="frame_id" value="map"/>
-  </node>
-
 
   <!--  ****** amcl *****  -->
   <include file="$(find second_project)/launch/amcl.launch.xml">
@@ -68,6 +78,8 @@
     <arg name="initial_pose_a" value="$(arg initial_pose_a)"/>
   </include>
 
+
+  <!-- <node pkg="second_project" type="navigation" name="navigation" output="screen"/> -->
 
   <!--  **************** Visualisation **************** -->
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find second_project)/rviz/second_rviz_config.rviz"/>

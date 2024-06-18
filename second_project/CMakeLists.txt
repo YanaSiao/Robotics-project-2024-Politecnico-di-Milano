@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
         std_msgs
         tf
         move_base
+        visualization_msgs
         )
 
 ## System dependencies are found with CMake's conventions
@@ -208,4 +209,6 @@ include_directories(
 
 add_executable(odom_to_tf src/odom_to_tf.cpp)
 target_link_libraries(odom_to_tf ${catkin_LIBRARIES})
+add_executable(marker src/marker.cpp)
+target_link_libraries(marker ${catkin_LIBRARIES})
 #add_executable(navigation src/navigation.cpp)

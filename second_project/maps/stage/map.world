@@ -30,15 +30,16 @@ window
 floorplan
 (
   name "maps"
-  bitmap "maps.png"
-  size [ 41.6 30.4 0.0 ]
-  pose [ 10.8 -6.0 0.0 0.0 ]
+  bitmap "../map.pgm"
+  size [ 31.08 16.44 2.0 ]
+  origin [ 12.15 -3.75 0.0 0.0 ]
+  pose [ 0.0 0.0 0.0 0.0 ]
 )
 
 # throw in a robot
 scout-mini
 (
-  pose [ 1.0 1.0 0.0 0.0 ]
+  pose [ 0.0 0.0 0.0 0.0 ]
   name "scout-mini"
   color "black"
 )
