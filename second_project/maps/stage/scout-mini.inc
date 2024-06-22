@@ -1,9 +1,9 @@
-define kinect ranger
+define lidar ranger
 (
   sensor
   (
     size [ 0.06 0.15 0.03 ]
-    range [0 8]
+    range [0 50]
     fov 360.0
     samples 1440
   )
@@ -14,17 +14,20 @@ define kinect ranger
 
 define scout-mini position
 (
-  pose [ 1.0 1.0 0.0 0.0 ]
-  
+  pose [ 0.0 0.0 0.0 0.0 ]
+
   localization "odom"
 
-  odom_error [0.001 0.001 0.0 0.001 ]
+  odom_error [0.01 0.01 0.0 0.01 ]
 
-  size [ 0.612 0.580 0.245 ]
+  size [ 0.618 0.580 0.245 ]
   origin [ 0.0 0.0 0.0 0.0 ]
   gui_nose 1
   drive "omni"
   color "grey"
-  
-  kinect(pose [ -0.1 0.0 -0.11 0.0 ])
+
+  velocity_limits [ 1.0 1.0 1.0 ]  # Max linear velocity (x, y) and angular velocity (z)
+  acceleration_limits [ 0.5 0.5 1.0 ]  # Max linear acceleration (x, y) and angular acceleration (z)
+
+  lidar(pose [ -0.1 0.0 -0.11 0.0 ])
 )

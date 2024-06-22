@@ -14,3 +14,7 @@ oscillation_distance: 0.2
 base_local_planner: "teb_local_planner/TebLocalPlannerROS"
 base_global_planner: "carrot_planner/CarrotPlanner" #alternatives: global_planner/GlobalPlanner, carrot_planner/CarrotPlanner navfn/NavfnROS
 
+recovery_behavior_enabled: true
+clearing_rotation_allowed: true
+clearing_rotation:
+  clear_radius: 1.0

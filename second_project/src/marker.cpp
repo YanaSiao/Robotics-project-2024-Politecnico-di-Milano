@@ -10,8 +10,16 @@ private:
     ros::Publisher marker_pub;
     tf::TransformListener listener;
 
+    double marker_size_x, marker_size_y, marker_size_z;
+
+
 public:
     MarkerPublisher() {
+        ros::NodeHandle private_nh("~");
+        private_nh.param("marker_size_x", marker_size_x, 0.612);
+        private_nh.param("marker_size_y", marker_size_y, 0.580);
+        private_nh.param("marker_size_z", marker_size_z, 0.245);
+
         marker_pub = n.advertise<visualization_msgs::Marker>("visualization_marker", 1);
     }
 
@@ -52,6 +60,8 @@ public:
 
     void init() {
         ros::Rate rate(10);  // Frequenza di pubblicazione 10 Hz
+        ros::Duration(2.0).sleep();  // Aggiungi un ritardo di 2 secondi
+
         while (ros::ok()) {
             publish_marker();
             rate.sleep();

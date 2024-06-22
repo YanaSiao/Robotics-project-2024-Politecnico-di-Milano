@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(second_project)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -13,16 +13,12 @@ find_package(catkin REQUIRED COMPONENTS
         tf
         move_base
         visualization_msgs
+        actionlib
+        move_base_msgs
         )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
-
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -135,7 +131,14 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/second_project_node.cpp)
+add_executable(odom_to_tf src/odom_to_tf.cpp)
+target_link_libraries(odom_to_tf ${catkin_LIBRARIES})
+
+add_executable(marker src/marker.cpp)
+target_link_libraries(marker ${catkin_LIBRARIES})
+
+add_executable(goal_publisher src/goal_publisher.cpp)
+target_link_libraries(goal_publisher ${catkin_LIBRARIES})
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -168,9 +171,9 @@ include_directories(
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-# install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS odom_to_tf marker goal_publisher
+        RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+        )
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
@@ -206,9 +209,3 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(odom_to_tf src/odom_to_tf.cpp)
-target_link_libraries(odom_to_tf ${catkin_LIBRARIES})
-add_executable(marker src/marker.cpp)
-target_link_libraries(marker ${catkin_LIBRARIES})
-#add_executable(navigation src/navigation.cpp)

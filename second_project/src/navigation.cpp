@@ -12,90 +12,90 @@
 
 #define X_POS 0
 #define Y_POS 1
-#define W_POS 2 
+#define W_POS 2
 
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 class Navigation{
-    private:
-	
-	ros::NodeHandle nh;
+private:
 
-        void move_to_goal(double x, double y, double tetha){
-            
-            ROS_INFO("MoveBase parameters received to be reached: X: %f , Y: %f, W: %f",x,y,tetha);
-            MoveBaseClient client("move_base", true);
+    ros::NodeHandle nh;
 
-            ROS_INFO("Waiting for the move_base action server...");
-            while(!client.waitForServer(ros::Duration(5.0))){
-		        ROS_INFO("Waiting for the move_base action server to come up");
-	        }
+    void move_to_goal(double x, double y, double tetha){
 
-            move_base_msgs::MoveBaseGoal goal;
-   	        ROS_INFO("Server is Ready!");
-            goal.target_pose.header.frame_id = "base_link"; 
-            goal.target_pose.header.stamp = ros::Time::now(); 
-            goal.target_pose.pose.position.x = x;    
-            goal.target_pose.pose.position.y = y;    
+        ROS_INFO("MoveBase parameters received to be reached: X: %f , Y: %f, W: %f",x,y,tetha);
+        MoveBaseClient client("move_base", true);
 
-            geometry_msgs::Quaternion theta_quaternions = tf::createQuaternionMsgFromYaw(tetha);
-            goal.target_pose.pose.orientation = theta_quaternions;
-
-            ROS_INFO("Sending goal to move_base...");
-            client.sendGoal(goal);
-
-            client.waitForResult();
-
-            if (client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-            {
-                ROS_INFO("Goal reached!");
-            }
-            else
-            {
-                ROS_INFO("Failed to reach the goal.");
-            }
+        ROS_INFO("Waiting for the move_base action server...");
+        while(!client.waitForServer(ros::Duration(5.0))){
+            ROS_INFO("Waiting for the move_base action server to come up");
         }
-    
-    public:
-        void init(){
-            std::string waypoint_file;
-            ros::param::get("waypoint_file", waypoint_file);
-            ROS_INFO("Node init!");
 
-            this->readData(waypoint_file);
+        move_base_msgs::MoveBaseGoal goal;
+        ROS_INFO("Server is Ready!");
+        goal.target_pose.header.frame_id = "base_link";
+        goal.target_pose.header.stamp = ros::Time::now();
+        goal.target_pose.pose.position.x = x;
+        goal.target_pose.pose.position.y = y;
+
+        geometry_msgs::Quaternion theta_quaternions = tf::createQuaternionMsgFromYaw(tetha);
+        goal.target_pose.pose.orientation = theta_quaternions;
+
+        ROS_INFO("Sending goal to move_base...");
+        client.sendGoal(goal);
+
+        client.waitForResult();
+
+        if (client.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+        {
+            ROS_INFO("Goal reached!");
+        }
+        else
+        {
+            ROS_INFO("Failed to reach the goal.");
+        }
+    }
+
+public:
+    void init(){
+        std::string waypoint_file;
+        ros::param::get("waypoint_file", waypoint_file);
+        ROS_INFO("Node init!");
+
+        this->readData(waypoint_file);
+        return;
+    }
+
+    void readData(std::string filename){
+
+        std::ifstream file(filename);
+        std::string line;
+        ROS_INFO("searching waypoints!");
+        if (!file.is_open())
+        {
+            ROS_INFO("Waypoint file is missing!");
             return;
         }
 
-        void readData(std::string filename){
 
-                    std::ifstream file(filename);
-                    std::string line;
-		            ROS_INFO("searching waypoints!");
-                    if (!file.is_open())
-                    {
-                        ROS_INFO("Waypoint file is missing!");
-                        return;
-                    }
+        while (std::getline(file, line))
+        {
+            std::vector<std::string> row;
+            std::stringstream ss(line);
+            std::string cell;
+            ROS_INFO("computing waypoints!");
+            while (std::getline(ss, cell, ','))
+            {
+                row.push_back(cell);
+            }
+            ROS_INFO("GOAL to be reached: X: %f , Y: %f, W: %f",std::stod(row.at(X_POS)), std::stod(row.at(Y_POS)), std::stod(row.at(W_POS)));
+            this->move_to_goal(std::stod(row.at(X_POS)),std::stod(row.at(Y_POS)),std::stod(row.at(W_POS)));
 
-                    
-                    while (std::getline(file, line))
-                    {
-                        std::vector<std::string> row;
-                        std::stringstream ss(line);
-                        std::string cell;
-			            ROS_INFO("computing waypoints!");
-                        while (std::getline(ss, cell, ','))
-                        {
-                            row.push_back(cell);
-                        }
-			            ROS_INFO("GOAL to be reached: X: %f , Y: %f, W: %f",std::stod(row.at(X_POS)), std::stod(row.at(Y_POS)), std::stod(row.at(W_POS)));
-                        this->move_to_goal(std::stod(row.at(X_POS)),std::stod(row.at(Y_POS)),std::stod(row.at(W_POS)));
-
-                    }
-
-                    file.close();
-                    return;
         }
+
+        file.close();
+        return;
+    }
 
 };
 

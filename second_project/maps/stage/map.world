@@ -16,7 +16,7 @@ define floorplan model
   ranger_return 1
 )
 
-resolution 0.02
+resolution 0.055
 interval_sim 100  # simulation timestep in milliseconds
 
 window
@@ -29,17 +29,17 @@ window
 
 floorplan
 (
-  name "maps"
+  name "map"
   bitmap "../map.pgm"
   size [ 31.08 16.44 2.0 ]
-  origin [ 12.15 -3.75 0.0 0.0 ]
+  origin [ 12.880 -2.650 0.0 0.0 ]
   pose [ 0.0 0.0 0.0 0.0 ]
 )
 
 # throw in a robot
 scout-mini
 (
-  pose [ 0.0 0.0 0.0 0.0 ]
+  pose [ 1.0 1.0 0.0 0.0 ]
   name "scout-mini"
   color "black"
 )

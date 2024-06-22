@@ -30,29 +30,27 @@
   <arg name="marker_size_x" default="0.612"/>
   <arg name="marker_size_y" default="0.580"/>
   <arg name="marker_size_z" default="0.245"/>
-     <!-- Joint State Publisher -->
-  <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher">
-    <param name="use_gui" value="false"/>
-  </node>
-
-  <!-- Robot State Publisher -->
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
   <!-- Node for publishing the cube marker -->
-  <node name="marker" pkg="second_project" type="marker" output="screen">
+  <node pkg="second_project" name="marker" type="marker" output="screen">
     <!-- Passa i parametri del marker come argomenti -->
     <param name="marker_size_x" value="$(arg marker_size_x)"/>
     <param name="marker_size_y" value="$(arg marker_size_y)"/>
     <param name="marker_size_z" value="$(arg marker_size_z)"/>
   </node>
 
+  <!--  ************** Goal Pub  ***************  -->
+
+   <node name="goal_publisher" pkg="second_project" type="goal_publisher" output="screen">
+        <param name="csv_file" value="$(find second_project)/waypoints.csv" />
+   </node>
 
   <!--  ************** Navigation  ***************  -->
    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find second_project)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find second_project)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-    <rosparam file="$(find second_project)/config/local_costmap_params.yaml" command="load" />
-    <rosparam file="$(find second_project)/config/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find second_project)/config/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find second_project)/config/global_costmap_params.yaml" command="load"/>
     <rosparam file="$(find second_project)/config/teb_local_planner_params.yaml" command="load" />
     <rosparam file="$(find second_project)/config/move_base_params.yaml" command="load" />
 

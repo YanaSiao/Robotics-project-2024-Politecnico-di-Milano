@@ -52,6 +52,6 @@
   <!--trasform from base link to rslidar-->
   <node pkg="tf2_ros" type="static_transform_publisher" name="base_link_to_base_laser_link" args="0 0 0 0 0 0 base_link rslidar" />
 
- <node pkg="rviz" type="rviz" name="rviz" args="-d $(find second_project)/config/my_rviz_config.rviz" />
+ <node pkg="rviz" type="rviz" name="rviz" args="-d $(find second_project)/rviz/my_rviz_config.rviz" />
 
 </launch>
