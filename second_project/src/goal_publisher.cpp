@@ -82,14 +82,22 @@ int main(int argc, char **argv) {
         ROS_INFO("Sending goal: x=%f, y=%f, theta=%f", goal.x, goal.y, goal.theta);
         ac.sendGoal(move_base_goal);
 
+        while (ac.getState() != actionlib::SimpleClientGoalState::SUCCEEDED &&
+               ac.getState() != actionlib::SimpleClientGoalState::ABORTED &&
+               ros::ok()) {
+            ros::Duration(1.0).sleep(); // Check every second
+        }
+
         ac.waitForResult();
         if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
             ROS_INFO("Reached goal");
+        } else if (ac.getState() == actionlib::SimpleClientGoalState::ABORTED) {
+            ROS_WARN("Goal aborted, trying next one");
         } else {
-            ROS_WARN("Failed to reach goal, trying next one");
+            ROS_WARN("Goal not succeeded nor aborted, continuing to next goal");
         }
 
-        ros::Duration(5).sleep();  // Delay before sending next goal
+        ros::Duration(2.0).sleep();  // Delay before sending next goal
     }
 
     return 0;
