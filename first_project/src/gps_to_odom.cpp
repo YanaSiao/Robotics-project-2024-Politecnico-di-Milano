@@ -25,7 +25,7 @@ private:
     std::vector<double> prev_enu_point;
 
     double orientation;
-    double prev_orientation = 0.0; // Initialize with any default value
+    double prev_orientation = 0.0; // a default value
 
     double lat = 0.0;
     double lon = 0.0;
@@ -44,7 +44,7 @@ public:
         gps_sub = nh.subscribe("fix", 1000, &Gps_to_odom::fixCallback, this);
         odom_pub = nh.advertise<nav_msgs::Odometry>("gps_odom", 1000);
 
-        ros::spin(); //fa il check sulle chiamate ai callback
+        ros::spin(); //il check sulle chiamate ai callback
     }
 
     std::vector<double> rotate2D(std::vector<double> xy, double angle_degrees) {
@@ -79,7 +79,7 @@ public:
 
     geometry_msgs::Quaternion quaternionFromYaw(double yaw) {
         tf2::Quaternion quat;
-        quat.setRPY(0, 0, yaw);  // Roll, pitch, yaw (in radians)
+        quat.setRPY(0, 0, yaw);  // Roll, pitch, yaw (radians)
 
         geometry_msgs::Quaternion quat_msg = tf2::toMsg(quat);
 
@@ -87,24 +87,23 @@ public:
     }
 
     void fixCallback(const sensor_msgs::NavSatFix::ConstPtr& message){
-        //in ogni caso devo settare le nuove variabili, anche quando siamo alla prima volta!
+
         lat = message -> latitude;
         lon = message -> longitude;
         alt = message -> altitude;
         ROS_INFO("Dati base: %f %f %f", lat,lon,alt);
 
         std::vector<double> ecef_point = gpsToEcef(lat, lon, alt);
-        //ROS_INFO("Dati ecef: %f %f %f", ecef_point[0],ecef_point[1],ecef_point[2]);
 
         std::vector<double> enu_point = ecefToEnu(ref_point,ecef_point);
 
         enu_point = rotate2D(enu_point,130);
 
-        // Calculate displacement for heading estimation
+        //displacement for heading estimation
 
         std::vector<double> displacement(2);
 
-        // Calculate displacement (assuming NED coordinates)
+        // displacement (assuming NED coordinates)
         displacement[0] = enu_point[0] - prev_enu_point[0]; // Easting difference
         displacement[1] = enu_point[1] - prev_enu_point[1]; // Northing difference
 
@@ -113,10 +112,10 @@ public:
             orientation = prev_orientation;
         } else {
             // Calculate orientation using arctangent (atan2 for signed angle)
-            orientation = atan2(displacement[1], displacement[0]) /*+ 129 * M_PI / 180*/;
+            orientation = atan2(displacement[1], displacement[0]);
         }
 
-        // Update previous position for next iteration (after orientation calculation)
+        // Update previous position for next iteration
         prev_enu_point[0] = enu_point[0];
         prev_enu_point[1] = enu_point[1];
 

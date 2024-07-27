@@ -17,19 +17,13 @@ private:
 
 public:
 
-    //Constructor in which the node subscribes to a topic (needs to be remapped in launch file)
+    //Constructor in which the node subscribes to a topic (remapped in launch file)
     Odom_to_tf(){
         sub = n.subscribe("input_odom", 1000, &Odom_to_tf::callback, this);
     }
 
     void callback(const nav_msgs::Odometry::ConstPtr& msg){
-        //Create the Transform object
         geometry_msgs::TransformStamped transform;
-
-        //transform.setOrigin( tf::Vector3(msg->x, msg->y, 0) );
-        //tf::Quaternion q;
-        //q.setRPY(0, 0, msg->theta);
-        //transform.setRotation(q);
 
         n.getParam("root_frame",root.data);
         std::string param_name = ros::this_node::getName() + "/child_frame";

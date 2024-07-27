@@ -2,7 +2,7 @@
     <!-- given by prof -->
   <param name="/use_sim_time" value="true"/>
 
- <!-- Conversione da PointCloud a LaserScan -->
+ <!--from PointCloud to LaserScan -->
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan" output = "screen">
     <param name="target_frame" value="rslidar"/>
     <remap from="cloud_in" to="ugv/rslidar_points"/>

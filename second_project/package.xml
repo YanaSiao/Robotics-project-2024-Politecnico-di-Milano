@@ -4,12 +4,6 @@
   <version>0.0.0</version>
   <description>The second project package</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <maintainer email="yana.siao@mail.polimi.it">Yana Siao</maintainer>
-  <maintainer email="qijessy.zhang@mail.polimi.it">Qi Jessy Zhang</maintainer>
-  <maintainer email="veronica.viceconti@mail.polimi.it">Veronica Viceconti</maintainer>
-
-
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
