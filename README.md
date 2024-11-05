@@ -6,6 +6,7 @@ ROS projects for 'Robotics 2023-2024'course from Politecnico di Milano.
 Focuses on developing a ROS package for robotics applications. The tasks include creating three ROS nodes: gps_to_odom for converting GPS data to odometry, odom_to_tf for transforming odometry data into a TF frame, and lidar_remap for visualizing LiDAR data with dynamic frame adjustment. The project integrates odometry, GPS, and LiDAR data to enhance robot navigation and mapping capabilities, and uses ROS tools such as RViz for visualization and debugging.
 ![robotics project visualisation](https://github.com/user-attachments/assets/94f469d3-888c-4b79-a6eb-1578f2a9dfc5)
 (Picture: Rendered laser scan view in RViz, created from transformed data.)
+
 ---
 
 **The second project:**
